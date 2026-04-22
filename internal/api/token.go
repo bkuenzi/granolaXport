@@ -40,5 +40,10 @@ func getAccessToken(file []byte) (string, error) {
 		return "", ErrAccessTokenNotFound
 	}
 
+	// Reject tokens that don't look like JWTs to prevent header injection.
+	if parts := strings.Split(tokens.AccessToken, "."); len(parts) != 3 {
+		return "", fmt.Errorf("access token has unexpected format (expected 3 JWT segments, got %d)", len(parts))
+	}
+
 	return tokens.AccessToken, nil
 }

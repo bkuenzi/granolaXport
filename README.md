@@ -10,13 +10,13 @@
  |___/                                |_|
 ```
 
-[![Go Version](https://img.shields.io/github/go-mod/go-version/theantichris/granola)](https://go.dev/)
-[![Go Reference](https://pkg.go.dev/badge/github.com/theantichris/granola.svg)](https://pkg.go.dev/github.com/theantichris/granola)
-[![Go Report Card](https://goreportcard.com/badge/github.com/theantichris/granola)](https://goreportcard.com/report/github.com/theantichris/granola)
-[![Go](https://github.com/theantichris/granola/actions/workflows/go.yml/badge.svg)](https://github.com/theantichris/granola/actions/workflows/go.yml)
-[![Markdown Lint](https://github.com/theantichris/granola/actions/workflows/markdown.yml/badge.svg)](https://github.com/theantichris/granola/actions/workflows/markdown.yml)
-[![License](https://img.shields.io/github/license/theantichris/granola)](LICENSE)
-[![Release](https://img.shields.io/github/v/release/theantichris/granola)](https://github.com/theantichris/granola/releases)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/bkuenzi/granolaXport)](https://go.dev/)
+[![Go Reference](https://pkg.go.dev/badge/github.com/bkuenzi/granolaXport.svg)](https://pkg.go.dev/github.com/bkuenzi/granolaXport)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bkuenzi/granolaXport)](https://goreportcard.com/report/github.com/bkuenzi/granolaXport)
+[![Go](https://github.com/bkuenzi/granolaXport/actions/workflows/go.yml/badge.svg)](https://github.com/bkuenzi/granolaXport/actions/workflows/go.yml)
+[![Markdown Lint](https://github.com/bkuenzi/granolaXport/actions/workflows/markdown.yml/badge.svg)](https://github.com/bkuenzi/granolaXport/actions/workflows/markdown.yml)
+[![License](https://img.shields.io/github/license/bkuenzi/granolaXport)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/bkuenzi/granolaXport)](https://github.com/bkuenzi/granolaXport/releases)
 
 Export your [Granola](https://granola.ai) notes and transcripts to local files for backup, migration, or offline access.
 
@@ -32,7 +32,7 @@ Export your [Granola](https://granola.ai) notes and transcripts to local files f
 
 ### Download Pre-Built Binary (Recommended)
 
-1. Go to the [releases page](https://github.com/theantichris/granola/releases/latest)
+1. Go to the [releases page](https://github.com/bkuenzi/granolaXport/releases/latest)
 2. Download the appropriate file for your operating system:
    - **macOS**: `granola_Darwin_x86_64.tar.gz` (Intel) or `granola_Darwin_arm64.tar.gz` (Apple Silicon)
    - **Linux**: `granola_Linux_x86_64.tar.gz`
@@ -44,7 +44,7 @@ Export your [Granola](https://granola.ai) notes and transcripts to local files f
 If you have Go installed:
 
 ```bash
-go install github.com/theantichris/granola@latest
+go install github.com/bkuenzi/granolaXport@latest
 ```
 
 ## Quick Start
@@ -225,7 +225,7 @@ Segments: 142
 ### Need More Help?
 
 - Check the `--help` output: `granola notes --help`
-- [Open an issue](https://github.com/theantichris/granola/issues) on GitHub
+- [Open an issue](https://github.com/bkuenzi/granolaXport/issues) on GitHub
 
 ---
 
@@ -243,7 +243,7 @@ The sections below are for those who want to contribute to the project or build 
 **Clone and build:**
 
 ```bash
-git clone https://github.com/theantichris/granola.git
+git clone https://github.com/bkuenzi/granolaXport.git
 cd granola
 go build -o granola
 ```
@@ -402,7 +402,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For issues, questions, or feature requests:
 
-- [Open an issue](https://github.com/theantichris/granola/issues) on GitHub
+- [Open an issue](https://github.com/bkuenzi/granolaXport/issues) on GitHub
 - Check existing issues for solutions
 - Include debug output (`--debug`) when reporting problems
 

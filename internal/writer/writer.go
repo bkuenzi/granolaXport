@@ -3,17 +3,13 @@ package writer
 
 import (
 	"fmt"
-	"path/filepath"
-	"regexp"
-	"strings"
 	"time"
 
 	"github.com/spf13/afero"
-	"github.com/theantichris/granola/internal/api"
-	"github.com/theantichris/granola/internal/converter"
+	"github.com/bkuenzi/granolaXport/internal/api"
+	"github.com/bkuenzi/granolaXport/internal/converter"
+	"github.com/bkuenzi/granolaXport/internal/sanitize"
 )
-
-var invalidFileChars = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1f]`)
 
 // Write writes documents to Markdown files in the specified output directory.
 // It only writes files if they don't exist or if the document's updated_at timestamp
@@ -26,11 +22,14 @@ func Write(docs []api.Document, outputDir string, fs afero.Fs) error {
 	usedFilenames := make(map[string]int)
 
 	for _, doc := range docs {
-		filename := sanitizeFilename(doc.Title, doc.ID)
-		filename = makeUnique(filename, usedFilenames)
+		filename := sanitize.Filename(doc.Title, doc.ID)
+		filename = sanitize.MakeUnique(filename, usedFilenames)
 		usedFilenames[filename]++
 
-		filePath := filepath.Join(outputDir, filename+".md")
+		filePath, err := sanitize.SafePath(outputDir, filename, ".md")
+		if err != nil {
+			return fmt.Errorf("unsafe filename for document %s: %w", doc.ID, err)
+		}
 
 		// Check if file exists and compare timestamps
 		shouldWrite, err := shouldUpdateFile(fs, filePath, doc.UpdatedAt)
@@ -86,40 +85,3 @@ func shouldUpdateFile(fs afero.Fs, filePath string, updatedAt string) (bool, err
 	return docUpdatedAt.After(fileInfo.ModTime()), nil
 }
 
-// sanitizeFilename removes invalid characters from a filename and falls back to ID if empty.
-func sanitizeFilename(title, id string) string {
-	// Use title if available, otherwise use ID
-	name := strings.TrimSpace(title)
-	if name == "" {
-		name = id
-	}
-
-	// Replace invalid characters with underscores
-	name = invalidFileChars.ReplaceAllString(name, "_")
-
-	// Replace multiple consecutive underscores with a single one
-	name = regexp.MustCompile(`_+`).ReplaceAllString(name, "_")
-
-	// Trim underscores from start and end
-	name = strings.Trim(name, "_")
-
-	// Ensure we have something
-	if name == "" {
-		name = "untitled"
-	}
-
-	// Limit length to 100 characters for filesystem compatibility
-	if len(name) > 100 {
-		name = name[:100]
-	}
-
-	return name
-}
-
-// makeUnique appends a number to a filename if it already exists.
-func makeUnique(filename string, used map[string]int) string {
-	if count, exists := used[filename]; exists {
-		return fmt.Sprintf("%s_%d", filename, count+1)
-	}
-	return filename
-}

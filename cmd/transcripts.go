@@ -3,23 +3,21 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
-	"regexp"
 	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/theantichris/granola/internal/cache"
-	"github.com/theantichris/granola/internal/transcript"
+	"github.com/bkuenzi/granolaXport/internal/cache"
+	"github.com/bkuenzi/granolaXport/internal/sanitize"
+	"github.com/bkuenzi/granolaXport/internal/transcript"
 )
 
 var (
-	ErrTranscriptCmdInit  = errors.New("failed to initialize the transcripts command")
-	ErrTranscriptExport   = errors.New("failed to export transcripts")
-	ErrCacheFileNotFound  = errors.New("cache file not found")
-	invalidCharsRegex     = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1f]`)
+	ErrTranscriptCmdInit = errors.New("failed to initialize the transcripts command")
+	ErrTranscriptExport  = errors.New("failed to export transcripts")
+	ErrCacheFileNotFound = errors.New("cache file not found")
 )
 
 // NewTranscriptsCmd creates a new transcripts command and binds its flags.
@@ -75,7 +73,7 @@ func writeTranscripts(logger *log.Logger) error {
 		return fmt.Errorf("%w: failed to create output directory: %s", ErrTranscriptExport, err)
 	}
 
-	usedFilenames := make(map[string]bool)
+	usedFilenames := make(map[string]int)
 	count := 0
 
 	for docID, segments := range cacheData.Transcripts {
@@ -95,15 +93,14 @@ func writeTranscripts(logger *log.Logger) error {
 		}
 
 		// Generate filename
-		filename := doc.Title
-		if filename == "" {
-			filename = doc.ID
-		}
-		filename = sanitizeFilename(filename)
-		filename = makeUnique(filename, usedFilenames)
-		usedFilenames[filename] = true
+		filename := sanitize.Filename(doc.Title, doc.ID)
+		filename = sanitize.MakeUnique(filename, usedFilenames)
+		usedFilenames[filename]++
 
-		filePath := filepath.Join(outputDir, filename+".txt")
+		filePath, err := sanitize.SafePath(outputDir, filename, ".txt")
+		if err != nil {
+			return fmt.Errorf("%w: unsafe filename for document %s: %s", ErrTranscriptExport, docID, err)
+		}
 
 		// Check if file needs updating
 		if !shouldUpdateFile(doc, filePath) {
@@ -128,31 +125,6 @@ func writeTranscripts(logger *log.Logger) error {
 	logger.Info("Export completed successfully", "files", count)
 
 	return nil
-}
-
-// sanitizeFilename removes invalid characters and limits length.
-func sanitizeFilename(name string) string {
-	name = invalidCharsRegex.ReplaceAllString(name, "_")
-	if len(name) > 100 {
-		name = name[:100]
-	}
-	return name
-}
-
-// makeUnique ensures filename is unique by appending a number if needed.
-func makeUnique(filename string, used map[string]bool) string {
-	if !used[filename] {
-		return filename
-	}
-
-	counter := 2
-	for {
-		uniqueName := fmt.Sprintf("%s_%d", filename, counter)
-		if !used[uniqueName] {
-			return uniqueName
-		}
-		counter++
-	}
 }
 
 // shouldUpdateFile checks if the file needs to be updated based on timestamps.

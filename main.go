@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/fang"
-	"github.com/theantichris/granola/cmd"
+	"github.com/bkuenzi/granolaXport/cmd"
 )
 
 func main() {

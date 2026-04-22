@@ -2,20 +2,17 @@ package transcript
 
 import (
 	"fmt"
-	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/spf13/afero"
-	"github.com/theantichris/granola/internal/api"
-	"github.com/theantichris/granola/internal/prosemirror"
+	"github.com/bkuenzi/granolaXport/internal/api"
+	"github.com/bkuenzi/granolaXport/internal/prosemirror"
+	"github.com/bkuenzi/granolaXport/internal/sanitize"
 )
 
-var (
-	invalidCharsRegex = regexp.MustCompile(`[<>:"/\\|?*\x00-\x1f]`)
-	htmlTagRegex      = regexp.MustCompile(`<[^>]*>`)
-)
+var htmlTagRegex = regexp.MustCompile(`<[^>]*>`)
 
 // Write writes documents as plain text transcript files to the specified output directory.
 func Write(documents []api.Document, outputDir string, fs afero.Fs) error {
@@ -23,16 +20,18 @@ func Write(documents []api.Document, outputDir string, fs afero.Fs) error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	usedFilenames := make(map[string]bool)
+	usedFilenames := make(map[string]int)
 
 	for _, doc := range documents {
 		// Check if file needs updating
-		filename := generateFilename(doc.Title, doc.ID)
-		filename = sanitizeFilename(filename)
-		filename = makeUnique(filename, usedFilenames)
-		usedFilenames[filename] = true
+		filename := sanitize.Filename(doc.Title, doc.ID)
+		filename = sanitize.MakeUnique(filename, usedFilenames)
+		usedFilenames[filename]++
 
-		filePath := filepath.Join(outputDir, filename+".txt")
+		filePath, err := sanitize.SafePath(outputDir, filename, ".txt")
+		if err != nil {
+			return fmt.Errorf("unsafe filename for document %s: %w", doc.ID, err)
+		}
 
 		if !shouldUpdateFile(doc, filePath, fs) {
 			continue
@@ -136,39 +135,6 @@ func stripHTML(html string) string {
 	text = strings.TrimSpace(text)
 
 	return text
-}
-
-// generateFilename creates a filename from the title or ID.
-func generateFilename(title, id string) string {
-	if title != "" {
-		return title
-	}
-	return id
-}
-
-// sanitizeFilename removes invalid characters and limits length.
-func sanitizeFilename(name string) string {
-	name = invalidCharsRegex.ReplaceAllString(name, "_")
-	if len(name) > 100 {
-		name = name[:100]
-	}
-	return name
-}
-
-// makeUnique ensures filename is unique by appending a number if needed.
-func makeUnique(filename string, used map[string]bool) string {
-	if !used[filename] {
-		return filename
-	}
-
-	counter := 2
-	for {
-		uniqueName := fmt.Sprintf("%s_%d", filename, counter)
-		if !used[uniqueName] {
-			return uniqueName
-		}
-		counter++
-	}
 }
 
 // shouldUpdateFile checks if the file needs to be updated based on timestamps.

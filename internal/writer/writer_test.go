@@ -7,7 +7,8 @@ import (
 	"time"
 
 	"github.com/spf13/afero"
-	"github.com/theantichris/granola/internal/api"
+	"github.com/bkuenzi/granolaXport/internal/api"
+	"github.com/bkuenzi/granolaXport/internal/sanitize"
 )
 
 func TestWrite(t *testing.T) {
@@ -373,9 +374,9 @@ func TestSanitizeFilename(t *testing.T) {
 		}
 
 		for _, tt := range tests {
-			result := sanitizeFilename(tt.title, tt.id)
+			result := sanitize.Filename(tt.title, tt.id)
 			if result != tt.expected {
-				t.Errorf("sanitizeFilename(%q, %q) = %q, want %q", tt.title, tt.id, result, tt.expected)
+				t.Errorf("sanitize.Filename(%q, %q) = %q, want %q", tt.title, tt.id, result, tt.expected)
 			}
 		}
 	})
@@ -384,7 +385,7 @@ func TestSanitizeFilename(t *testing.T) {
 		t.Parallel()
 
 		longTitle := strings.Repeat("a", 150)
-		result := sanitizeFilename(longTitle, "id-1")
+		result := sanitize.Filename(longTitle, "id-1")
 
 		if len(result) != 100 {
 			t.Errorf("expected length 100, got %d", len(result))
@@ -397,7 +398,7 @@ func TestMakeUnique(t *testing.T) {
 		t.Parallel()
 
 		used := make(map[string]int)
-		result := makeUnique("test", used)
+		result := sanitize.MakeUnique("test", used)
 
 		if result != "test" {
 			t.Errorf("expected 'test', got %q", result)
@@ -408,7 +409,7 @@ func TestMakeUnique(t *testing.T) {
 		t.Parallel()
 
 		used := map[string]int{"test": 1}
-		result := makeUnique("test", used)
+		result := sanitize.MakeUnique("test", used)
 
 		if result != "test_2" {
 			t.Errorf("expected 'test_2', got %q", result)
